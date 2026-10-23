@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>괴산고등학교 생태지도</title>
+        <style>
+            * {
+                  box-sizing: border-box;
+                        margin: 0;
+                              padding: 0;
+                                    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+                                        }
+
+                                            body {
+                                                  background-color: #f4f6f8;
+                                                        display: flex;
+                                                              flex-direction: column;
+                                                                    align-items: center;
+                                                                          padding: 20px;
+                                                                                color: #333;
+                                                                                    }
+
+                                                                                        h1 {
+                                                                                              margin-bottom: 10px;
+                                                                                                    color: #1e3a8a;
+                                                                                                          font-size: 24px;
+                                                                                                              }
+
+                                                                                                                  .instructions {
+                                                                                                                        font-size: 14px;
+                                                                                                                              color: #666;
+                                                                                                                                    margin-bottom: 15px;
+                                                                                                                                          text-align: center;
+                                                                                                                                              }
+
+                                                                                                                                                  .controls {
+                                                                                                                                                        margin-bottom: 15px;
+                                                                                                                                                              display: flex;
+                                                                                                                                                                    gap: 10px;
+                                                                                                                                                                        }
+
+                                                                                                                                                                            .btn {
+                                                                                                                                                                                  padding: 10px 16px;
+                                                                                                                                                                                        font-size: 14px;
+                                                                                                                                                                                              font-weight: 600;
+                                                                                                                                                                                                    border: none;
+                                                                                                                                                                                                          border-radius: 8px;
+                                                                                                                                                                                                                cursor: pointer;
+                                                                                                                                                                                                                      transition: all 0.2s ease;
+                                                                                                                                                                                                                          }
+
+                                                                                                                                                                                                                              .btn-primary {
+                                                                                                                                                                                                                                    background-color: #2563eb;
+                                                                                                                                                                                                                                          color: white;
+                                                                                                                                                                                                                                              }
+
+                                                                                                                                                                                                                                                  .btn-primary:hover {
+                                                                                                                                                                                                                                                        background-color: #1d4ed8;
+                                                                                                                                                                                                                                                            }
+
+                                                                                                                                                                                                                                                                .btn-primary.active {
+                                                                                                                                                                                                                                                                      background-color: #dc2626;
+                                                                                                                                                                                                                                                                          }
+
+                                                                                                                                                                                                                                                                              /* 지도 영역 및 항공지도 배경 */
+                                                                                                                                                                                                                                                                                  .map-container {
+                                                                                                                                                                                                                                                                                        position: relative;
+                                                                                                                                                                                                                                                                                              width: 100%;
+                                                                                                                                                                                                                                                                                                    max-width: 900px;
+                                                                                                                                                                                                                                                                                                          aspect-ratio: 16 / 9;
+                                                                                                                                                                                                                                                                                                                /* 업로드하신 괴산고 지도 이미지 파일명과 일치시킴 */
+                                                                                                                                                                                                                                                                                                                      background-image: url('1000003908'); 
+                                                                                                                                                                                                                                                                                                                            background-size: cover;
+                                                                                                                                                                                                                                                                                                                            
