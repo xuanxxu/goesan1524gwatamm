@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>괴산고등학교 생태지도 (1524_황현서)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #63826b;
+      --building-bg: #433935;
+      --building-border: #2c2522;
+      --field-bg: #2b512c;
+      --text-color: #f3ece0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
+
+    body {
+      background-color: var(--bg-color);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    header { text-align: center; color: var(--text-color); margin-bottom: 15px; }
+    header h1 { font-family: 'Gaegu', cursive; font-size: 2.4rem; letter-spacing: 2px; }
+
+    .map-container {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      height: 520px;
+      background-color: var(--bg-color);
+      border: 4px solid var(--building-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .building {
+      position: absolute;
+      background-color: var(--building-bg);
+      border: 2px solid var(--building-border);
+      color: var(--text-color);
+      font-family: 'Gaegu', cursive;
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      user-select: none;
+      box-shadow: 2px 3px 6px rgba(0,0,0,0.3);
+      cursor: default;
+    }
+
+    .field {
+      position: absolute;
+      top: 21%;
+      left: 31%;
+      width: 38%;
+      height: 44%;
+      background-color: var(--field-bg);
+      border: 3px solid var(--building-bg);
+    }
+
+    /* 건물 정확 배치 */
+    .b-goejeong { top: 4%; left: 43%; width: 11%; height: 16%; }
+    .b-science { top: 38%; left: 15%; width: 13%; height: 13%; }
+    .b-main-center { top: 66%; left: 34%; width: 12%; height: 20%; z-index: 2; }
+    .b-main-left { top: 74%; left: 24%; width: 10%; height: 12%; }
+    .b-main-right { top: 74%; left: 46%; width: 10%; height: 12%; }
+    .b-dorm-b { top: 22%; right: 14%; width: 7%; height: 10%; font-size: 1rem; }
+    .b-dorm-a { top: 33%; right: 13%; width: 9%; height: 17%; font-size: 1.1rem; }
+    .b-art { top: 60%; right: 22%; width: 7%; height: 11%; font-size: 1rem; }
+
+    /* 동그라미 식물 마커 */
+    .plant-marker {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: transparent;
+      border: 2px solid var(--building-bg);
+      color: var(--text-color);
+      font-family: 'Gaegu', cursive;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 5;
+      text-align: center;
+      word-break: keep-all;
+    }
+
+    .plant-marker:hover {
+      background-color: #e2a85c;
+      color: #2c2522;
+      transform: scale(1.2);
+    }
+
+    /* 위치 10개 (손그림 1:1 배치) */
+    .p-1  { top: 3%; left: 27.5%; }                  /* 1. 바랭이 */
+    .p-2  { top: 21%; left: 17.5%; }                 /* 2. 질경이 */
+    .p-3  { top: 30%; left: 23%; }                   /* 3. 민들레 */
+    .p-4  { top: 57%; left: 24.5%; }                 /* 4. 쑥 */
+    .p-5  { top: 57%; left: 32.5%; }                 /* 5. 철쭉 */
+    .p-6  { top: 58%; left: 39%; }                   /* 6. 회양목 */
+    .p-7  { top: 55%; left: 56.5%; width: 50px; height: 50px; } /* 7. 소나무 */
+    .p-8  { top: 31%; left: 65.5%; }                 /* 8. 개망초 */
+    .p-9  { top: 48.5%; right: 16.5%; width: 52px; height: 52px; font-size: 0.85rem; } /* 9. 모과나무 */
+    .p-10 { top: 77%; right: 18%; width: 52px; height: 52px; font-size: 0.85rem; }    /* 10. 벚나무 */
+
+    .info-card {
+      width: 100%;
+      max-width: 900px;
+      background: #ffffff;
+      margin-top: 15px;
+      padding: 18px;
+      border-radius: 10px;
+      display: none;
+    }
+    .info-card.active { display: block; }
+    .info-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-bottom: 10px; }
+    .info-title { font-size: 1.3rem; font-weight: 700; color: #2b512c; }
+    .info-tag { background: #63826b; color: #fff; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; }
+    .info-body { font-size: 0.95rem; line-height: 1.5; color: #444; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🌿 괴산고등학교 생태지도 (1524_황현서)</h1>
+  </header>
+
+  <div class="map-container">
+    <div class="field"></div>
+
+    <div class="building b-goejeong">괴정관</div>
+    <div class="building b-science">과학실</div>
+    <div class="building b-main-left"></div>
+    <div class="building b-main-center">본 관</div>
+    <div class="building b-main-right"></div>
+    <div class="building b-dorm-b">( 나 )</div>
+    <div class="building b-dorm-a">기숙사<br>( 가 )</div>
+    <div class="building b-art">예술관</div>
+
+    <!-- 식물 마커 ('모과' -> '모과나무', '벚' -> '벚나무' 수정) -->
+    <div class="plant-marker p-1" onclick="showPlant('바랭이')">바랭이</div>
+    <div class="plant-marker p-2" onclick="showPlant('질경이')">질경이</div>
+    <div class="plant-marker p-3" onclick="showPlant('민들레')">민들레</div>
+    <div class="plant-marker p-4" onclick="showPlant('쑥')">쑥</div>
+    <div class="plant-marker p-5" onclick="showPlant('철쭉')">철쭉</div>
+    <div class="plant-marker p-6" onclick="showPlant('회양목')">회양목</div>
+    <div class="plant-marker p-7" onclick="showPlant('소나무')">소나무</div>
+    <div class="plant-marker p-8" onclick="showPlant('개망초')">개망초</div>
+    <div class="plant-marker p-9" onclick="showPlant('모과나무')">모과나무</div>
+    <div class="plant-marker p-10" onclick="showPlant('벚나무')">벚나무</div>
+  </div>
+
+  <div class="info-card" id="infoCard">
+    <div class="info-header">
+      <div class="info-title" id="cardTitle">식물 이름</div>
+      <div class="info-tag" id="cardTag">구분</div>
+    </div>
+    <div class="info-body" id="cardContent"></div>
+  </div>
+
+  <script>
+    const plantData = {
+      '바랭이': { tag: '야생초', desc: '길가나 밭에서 흔히 자라며, 줄기 마디에서 뿌리를 내려 부채꼴 모양의 이삭을 펼치는 한해살이풀입니다.' },
+      '질경이': { tag: '야생초', desc: '사람이나 차에 밟혀도 살아남을 정도로 생명력이 강하며, 뿌리에서 잎이 모여 나는 여러해살이풀입니다.' },
+      '쑥': { tag: '야생초', desc: '독특한 향이 나며 잎 뒷면에 흰 털이 빽빽하게 자라는 국화과의 약용·식용 식물입니다.' },
+      '민들레': { tag: '야생초', desc: '봄에 노란색 또는 흰색 꽃이 피며, 깃털 모양의 갓털을 통해 바람으로 씨앗을 퍼뜨리는 여러해살이풀입니다.' },
+      '철쭉': { tag: '관목류', desc: '봄에 연분홍색 꽃이 피며, 잎과 꽃이 동시에 나고 진달래와 달리 독성이 있는 낙엽 관목입니다.' },
+      '소나무': { tag: '교목류', desc: '바늘 모양의 잎이 2개씩 짝을 이루며 겨울에도 푸르름을 유지하는 우리나라 대표 상록수입니다.' },
+      '모과나무': { tag: '목본류', desc: '줄기 껍질이 얼룩덜룩하게 벗겨지며 가을에 울퉁불퉁하고 향기로운 노란 열매를 맺는 나무입니다.' },
+      '벚나무': { tag: '교목류', desc: '나무껍질에 가로로 난 줄무늬(피목)가 특징이며 봄철 화려한 꽃을 피우는 낙엽 활엽 교목입니다.' },
+      '회양목': { tag: '관목류', desc: '잎이 작고 두꺼우며 사계절 내내 푸르고 가지치기에 잘 견뎌 조경용으로 자주 심는 관목입니다.' },
+      '개망초': { tag: '야생초', desc: '밭이나 들에 흔히 자라며, 계란 프라이를 닮은 흰 꽃잎과 노란 중심부가 특징인 귀화식물입니다.' }
+    };
+
+    function showPlant(name) {
+      const card = document.getElementById('infoCard');
+      const data = plantData[name];
+      if (data) {
+        document.getElementById('cardTitle').innerText = name;
+        document.getElementById('cardTag').innerText = data.tag;
+        document.getElementById('cardContent').innerHTML = `<p><strong>생태 및 특징:</strong> ${data.desc}</p>`;
+        card.classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>
