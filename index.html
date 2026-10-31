@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>괴산고등학교 생태지도</title>
+  <title>괴산고등학교 생태지도 (1524_황현서)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
@@ -84,14 +84,14 @@
     /* 동그라미 식물 마커 */
     .plant-marker {
       position: absolute;
-      width: 42px;
-      height: 42px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       background-color: transparent;
       border: 2px solid var(--building-bg);
       color: var(--text-color);
       font-family: 'Gaegu', cursive;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -99,6 +99,8 @@
       cursor: pointer;
       transition: all 0.2s ease;
       z-index: 5;
+      text-align: center;
+      word-break: keep-all;
     }
 
     .plant-marker:hover {
@@ -114,10 +116,10 @@
     .p-4  { top: 57%; left: 24.5%; }                 /* 4. 쑥 */
     .p-5  { top: 57%; left: 32.5%; }                 /* 5. 철쭉 */
     .p-6  { top: 58%; left: 39%; }                   /* 6. 회양목 */
-    .p-7  { top: 55%; left: 56.5%; width: 48px; height: 48px; } /* 7. 소나무 */
+    .p-7  { top: 55%; left: 56.5%; width: 50px; height: 50px; } /* 7. 소나무 */
     .p-8  { top: 31%; left: 65.5%; }                 /* 8. 개망초 */
-    .p-9  { top: 48.5%; right: 17.5%; }              /* 9. 모과나무 */
-    .p-10 { top: 77%; right: 19%; }                  /* 10. 벚나무 */
+    .p-9  { top: 48.5%; right: 16.5%; width: 52px; height: 52px; font-size: 0.85rem; } /* 9. 모과나무 */
+    .p-10 { top: 77%; right: 18%; width: 52px; height: 52px; font-size: 0.85rem; }    /* 10. 벚나무 */
 
     .info-card {
       width: 100%;
@@ -138,7 +140,7 @@
 <body>
 
   <header>
-    <h1>🌿 괴산고등학교 생태지도</h1>
+    <h1>괴산고등학교 생태지도 (1524_황현서)</h1>
   </header>
 
   <div class="map-container">
@@ -162,8 +164,8 @@
     <div class="plant-marker p-6" onclick="showPlant('회양목')">회양목</div>
     <div class="plant-marker p-7" onclick="showPlant('소나무')">소나무</div>
     <div class="plant-marker p-8" onclick="showPlant('개망초')">개망초</div>
-    <div class="plant-marker p-9" onclick="showPlant('모과나무')">모과</div>
-    <div class="plant-marker p-10" onclick="showPlant('벚나무')">벚</div>
+    <div class="plant-marker p-9" onclick="showPlant('모과나무')">모과나무</div>
+    <div class="plant-marker p-10" onclick="showPlant('벚나무')">벚나무</div>
   </div>
 
   <div class="info-card" id="infoCard">
