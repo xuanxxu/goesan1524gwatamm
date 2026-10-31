@@ -1,479 +1,203 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>우리 학교 생태지도</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #e9efe6;
-    --ink: #1f3328;
-    --ink-soft: #4b6354;
-    --leaf: #3f7d4e;
-    --sun: #f2c14e;
-    --panel: #fbfdf9;
-    --line: #c5d3c4;
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; }
-  body {
-    background-color: var(--bg);
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    color: var(--ink);
-    font-family: "Gowun Dodum", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    line-height: 1.6;
-  }
-  header { max-width: 960px; margin: 0 auto; padding: 28px 20px 12px; }
-  h1 { margin: 0 0 4px; font-size: clamp(1.6rem, 4vw, 2.2rem); }
-  header p { margin: 0; color: var(--ink-soft); }
-  main { max-width: 960px; margin: 0 auto; padding: 8px 20px 70px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>괴산고등학교 생태지도 (1524_황현서)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #63826b;
+      --building-bg: #433935;
+      --building-border: #2c2522;
+      --field-bg: #2b512c;
+      --text-color: #f3ece0;
+    }
 
-  /* 지도 */
-  .map {
-    position: relative; width: 100%;
-    border: 2px solid var(--ink); border-radius: 10px; overflow: hidden;
-    background: #cfe0c8;
-    aspect-ratio: 16 / 10;           /* 지도 이미지 비율에 맞게 바꾸세요 */
-  }
-  .map img.base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
-  .map .fallback {
-    position: absolute; inset: 0; display: none;
-    align-items: center; justify-content: center; text-align: center;
-    color: var(--ink-soft); padding: 20px;
-    background:
-      repeating-linear-gradient(0deg, transparent 0 39px, rgba(31,51,40,.08) 39px 40px),
-      repeating-linear-gradient(90deg, transparent 0 39px, rgba(31,51,40,.08) 39px 40px),
-      #cfe0c8;
-  }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
 
-  .marker {
-    position: absolute; transform: translate(-50%, -50%);
-    font-size: clamp(22px, 4.5vw, 38px); line-height: 1;
-    background: rgba(255,255,255,.88);
-    border: 2px solid var(--leaf); border-radius: 50%;
-    width: 1.55em; height: 1.55em; display: grid; place-items: center;
-    cursor: pointer; padding: 0;
-    transition: box-shadow .15s ease;
-  }
-  .marker:hover, .marker:focus-visible { box-shadow: 0 0 0 4px var(--sun); outline: none; }
-  body.editing .marker { cursor: grab; touch-action: none; border-style: dashed; }
-  body.editing .marker:active { cursor: grabbing; }
+    body {
+      background-color: var(--bg-color);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
 
-  .legend { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
-  .legend button {
-    font: inherit; cursor: pointer; background: var(--panel);
-    border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; color: var(--ink);
-  }
-  .legend button:hover, .legend button:focus-visible { border-color: var(--leaf); outline: 2px solid var(--sun); }
-  .hint { margin-top: 10px; font-size: .9rem; color: var(--ink-soft); background: rgba(251,253,249,.8); display: inline-block; padding: 2px 8px; border-radius: 6px; }
+    header { text-align: center; color: var(--text-color); margin-bottom: 15px; }
+    header h1 { font-family: 'Gaegu', cursive; font-size: 2.4rem; letter-spacing: 2px; }
 
-  /* 팝업 공통 */
-  .overlay {
-    position: fixed; inset: 0; z-index: 10; background: rgba(20, 35, 27, .55);
-    display: none; align-items: center; justify-content: center; padding: 16px;
-  }
-  .overlay.open { display: flex; }
-  .card {
-    width: min(460px, 100%); max-height: 90vh; overflow: auto;
-    background: var(--panel); border-radius: 12px; border: 2px solid var(--ink);
-    animation: pop .18s ease-out;
-  }
-  @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .card { animation: none; } .marker { transition: none; } }
-  .card .photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #dbe6d8; display: block; }
-  .card .body { padding: 16px 18px 18px; }
-  .card h2 { margin: 0 0 2px; font-size: 1.4rem; }
-  .card .sci { margin: 0 0 10px; color: var(--ink-soft); font-size: .9rem; }
-  .card ul { margin: 0; padding-left: 1.2em; }
-  .card li { margin-bottom: 4px; }
-  .card .where { margin-top: 10px; font-size: .9rem; color: var(--ink-soft); }
+    .map-container {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      height: 520px;
+      background-color: var(--bg-color);
+      border: 4px solid var(--building-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
 
-  .btn {
-    font: inherit; cursor: pointer; border: 0; border-radius: 8px;
-    padding: 8px 16px; background: var(--ink); color: #fff;
-  }
-  .btn.alt { background: #fff; color: var(--ink); border: 1px solid var(--ink); }
-  .btn.danger { background: #a83a32; }
-  .btn:focus-visible, .lock:focus-visible { outline: 3px solid var(--sun); }
-  .actions { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .building {
+      position: absolute;
+      background-color: var(--building-bg);
+      border: 2px solid var(--building-border);
+      color: var(--text-color);
+      font-family: 'Gaegu', cursive;
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      user-select: none;
+      box-shadow: 2px 3px 6px rgba(0,0,0,0.3);
+      cursor: default;
+    }
 
-  /* 편집 폼 */
-  .row { display: block; margin-bottom: 10px; }
-  .row > span { display: block; font-size: .9rem; color: var(--ink-soft); }
-  .row input, .row textarea {
-    width: 100%; font: inherit; padding: 6px 8px;
-    border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink);
-  }
-  .row input[type="color"] { height: 38px; padding: 2px; }
-  .row small { display: block; color: var(--ink-soft); font-size: .8rem; }
-  .msg { color: #a83a32; min-height: 1.4em; margin: 6px 0 0; }
-  .out { word-break: break-all; font-family: monospace; font-size: .8rem; background: #eef3ec; padding: 6px; border-radius: 6px; min-height: 2em; }
+    .field {
+      position: absolute;
+      top: 21%;
+      left: 31%;
+      width: 38%;
+      height: 44%;
+      background-color: var(--field-bg);
+      border: 3px solid var(--building-bg);
+    }
 
-  /* 편집 도구줄 */
-  .toolbar {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 8;
-    background: var(--ink); color: #fff; padding: 8px 12px;
-    display: none; gap: 8px; flex-wrap: wrap; align-items: center;
-  }
-  body.editing .toolbar { display: flex; }
-  .toolbar .tip { flex: 1 1 220px; font-size: .85rem; opacity: .9; }
-  .toolbar .btn { background: #fff; color: var(--ink); padding: 6px 12px; }
-  .toolbar .btn.danger { background: #d4574d; color: #fff; }
+    /* 건물 정확 배치 */
+    .b-goejeong { top: 4%; left: 43%; width: 11%; height: 16%; }
+    .b-science { top: 38%; left: 15%; width: 13%; height: 13%; }
+    .b-main-center { top: 66%; left: 34%; width: 12%; height: 20%; z-index: 2; }
+    .b-main-left { top: 74%; left: 24%; width: 10%; height: 12%; }
+    .b-main-right { top: 74%; left: 46%; width: 10%; height: 12%; }
+    .b-dorm-b { top: 22%; right: 14%; width: 7%; height: 10%; font-size: 1rem; }
+    .b-dorm-a { top: 33%; right: 13%; width: 9%; height: 17%; font-size: 1.1rem; }
+    .b-art { top: 60%; right: 22%; width: 7%; height: 11%; font-size: 1rem; }
 
-  .lock {
-    position: fixed; right: 14px; bottom: 14px; z-index: 7;
-    font: inherit; cursor: pointer; background: rgba(251,253,249,.9);
-    border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; color: var(--ink-soft);
-  }
-  body.editing .lock { display: none; }
-</style>
+    /* 동그라미 식물 마커 */
+    .plant-marker {
+      position: absolute;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background-color: transparent;
+      border: 2px solid var(--building-bg);
+      color: var(--text-color);
+      font-family: 'Gaegu', cursive;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 5;
+    }
+
+    .plant-marker:hover {
+      background-color: #e2a85c;
+      color: #2c2522;
+      transform: scale(1.2);
+    }
+
+    /* 위치 10개 (손그림 1:1 배치) */
+    .p-1  { top: 3%; left: 27.5%; }                  /* 1. 바랭이 */
+    .p-2  { top: 21%; left: 17.5%; }                 /* 2. 질경이 */
+    .p-3  { top: 30%; left: 23%; }                   /* 3. 민들레 */
+    .p-4  { top: 57%; left: 24.5%; }                 /* 4. 쑥 */
+    .p-5  { top: 57%; left: 32.5%; }                 /* 5. 철쭉 */
+    .p-6  { top: 58%; left: 39%; }                   /* 6. 회양목 */
+    .p-7  { top: 55%; left: 56.5%; width: 48px; height: 48px; } /* 7. 소나무 */
+    .p-8  { top: 31%; left: 65.5%; }                 /* 8. 개망초 */
+    .p-9  { top: 48.5%; right: 17.5%; }              /* 9. 모과나무 */
+    .p-10 { top: 77%; right: 19%; }                  /* 10. 벚나무 */
+
+    .info-card {
+      width: 100%;
+      max-width: 900px;
+      background: #ffffff;
+      margin-top: 15px;
+      padding: 18px;
+      border-radius: 10px;
+      display: none;
+    }
+    .info-card.active { display: block; }
+    .info-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-bottom: 10px; }
+    .info-title { font-size: 1.3rem; font-weight: 700; color: #2b512c; }
+    .info-tag { background: #63826b; color: #fff; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; }
+    .info-body { font-size: 0.95rem; line-height: 1.5; color: #444; }
+  </style>
 </head>
 <body>
 
-<header>
-  <h1 id="title">우리 학교 생태지도</h1>
-  <p id="subtitle"></p>
-</header>
+  <header>
+    <h1>🌿 괴산고등학교 생태지도 (1524_황현서)</h1>
+  </header>
 
-<main>
-  <div class="map" id="map">
-    <img class="base" id="baseImg" alt="우리 학교 지도">
-    <div class="fallback" id="fallback">지도 이미지 파일이 아직 없어요.<br>images 폴더에 지도를 올리면 여기에 나타나요.</div>
+  <div class="map-container">
+    <div class="field"></div>
+
+    <div class="building b-goejeong">괴정관</div>
+    <div class="building b-science">과학실</div>
+    <div class="building b-main-left"></div>
+    <div class="building b-main-center">본 관</div>
+    <div class="building b-main-right"></div>
+    <div class="building b-dorm-b">( 나 )</div>
+    <div class="building b-dorm-a">기숙사<br>( 가 )</div>
+    <div class="building b-art">예술관</div>
+
+    <!-- 식물 마커 -->
+    <div class="plant-marker p-1" onclick="showPlant('바랭이')">바랭이</div>
+    <div class="plant-marker p-2" onclick="showPlant('질경이')">질경이</div>
+    <div class="plant-marker p-3" onclick="showPlant('민들레')">민들레</div>
+    <div class="plant-marker p-4" onclick="showPlant('쑥')">쑥</div>
+    <div class="plant-marker p-5" onclick="showPlant('철쭉')">철쭉</div>
+    <div class="plant-marker p-6" onclick="showPlant('회양목')">회양목</div>
+    <div class="plant-marker p-7" onclick="showPlant('소나무')">소나무</div>
+    <div class="plant-marker p-8" onclick="showPlant('개망초')">개망초</div>
+    <div class="plant-marker p-9" onclick="showPlant('모과나무')">모과</div>
+    <div class="plant-marker p-10" onclick="showPlant('벚나무')">벚</div>
   </div>
-  <div class="legend" id="legend" aria-label="생물 목록"></div>
-  <p class="hint" id="hint">이모티콘이나 위 목록의 이름을 누르면 자세한 설명이 나와요.</p>
-</main>
 
-<!-- 보기 팝업 -->
-<div class="overlay" id="viewOverlay" role="dialog" aria-modal="true" aria-labelledby="popTitle">
-  <div class="card">
-    <img class="photo" id="popPhoto" alt="">
-    <div class="body">
-      <h2 id="popTitle"></h2>
-      <p class="sci" id="popSci"></p>
-      <ul id="popTraits"></ul>
-      <p class="where" id="popWhere"></p>
-      <div class="actions"><button class="btn" id="popClose">닫기</button></div>
+  <div class="info-card" id="infoCard">
+    <div class="info-header">
+      <div class="info-title" id="cardTitle">식물 이름</div>
+      <div class="info-tag" id="cardTag">구분</div>
     </div>
+    <div class="info-body" id="cardContent"></div>
   </div>
-</div>
 
-<!-- 편집/비밀번호 팝업 -->
-<div class="overlay" id="editOverlay" role="dialog" aria-modal="true">
-  <div class="card"><div class="body" id="editBody"></div></div>
-</div>
+  <script>
+    const plantData = {
+      '바랭이': { tag: '야생초', desc: '길가나 밭에서 흔히 자라며, 줄기 마디에서 뿌리를 내려 부채꼴 모양의 이삭을 펼치는 한해살이풀입니다.' },
+      '질경이': { tag: '야생초', desc: '사람이나 차에 밟혀도 살아남을 정도로 생명력이 강하며, 뿌리에서 잎이 모여 나는 여러해살이풀입니다.' },
+      '쑥': { tag: '야생초', desc: '독특한 향이 나며 잎 뒷면에 흰 털이 빽빽하게 자라는 국화과의 약용·식용 식물입니다.' },
+      '민들레': { tag: '야생초', desc: '봄에 노란색 또는 흰색 꽃이 피며, 깃털 모양의 갓털을 통해 바람으로 씨앗을 퍼뜨리는 여러해살이풀입니다.' },
+      '철쭉': { tag: '관목류', desc: '봄에 연분홍색 꽃이 피며, 잎과 꽃이 동시에 나고 진달래와 달리 독성이 있는 낙엽 관목입니다.' },
+      '소나무': { tag: '교목류', desc: '바늘 모양의 잎이 2개씩 짝을 이루며 겨울에도 푸르름을 유지하는 우리나라 대표 상록수입니다.' },
+      '모과나무': { tag: '목본류', desc: '줄기 껍질이 얼룩덜룩하게 벗겨지며 가을에 울퉁불퉁하고 향기로운 노란 열매를 맺는 나무입니다.' },
+      '벚나무': { tag: '교목류', desc: '나무껍질에 가로로 난 줄무늬(피목)가 특징이며 봄철 화려한 꽃을 피우는 낙엽 활엽 교목입니다.' },
+      '회양목': { tag: '관목류', desc: '잎이 작고 두꺼우며 사계절 내내 푸르고 가지치기에 잘 견뎌 조경용으로 자주 심는 관목입니다.' },
+      '개망초': { tag: '야생초', desc: '밭이나 들에 흔히 자라며, 계란 프라이를 닮은 흰 꽃잎과 노란 중심부가 특징인 귀화식물입니다.' }
+    };
 
-<div class="toolbar" id="toolbar">
-  <span class="tip">편집 중: 이모티콘을 끌어서 옮기고, 눌러서 내용을 고쳐요.</span>
-  <button class="btn" id="tbAdd" type="button">+ 생물 추가</button>
-  <button class="btn" id="tbSettings" type="button">페이지 설정</button>
-  <button class="btn" id="tbExport" type="button">내보내기</button>
-  <button class="btn danger" id="tbReset" type="button">변경 지우기</button>
-  <button class="btn" id="tbDone" type="button">편집 끝내기</button>
-</div>
-<button class="lock" id="lockBtn" type="button">🔒 편집</button>
-
-<script>
-/* ============================================================
-   ★ 설정 ★
-   PASSWORD_HASH : 편집 비밀번호를 암호처럼 바꾼 값이에요. (처음 비밀번호: ecomap2026)
-                   바꾸는 법은 편집 모드의 [페이지 설정] 맨 아래에 있어요.
-   DEFAULT_DATA  : 처음 보이는 내용이에요. 편집 모드에서 고친 내용은
-                   [내보내기]로 data.json 을 받아 GitHub에 올려야 모두에게 보여요.
-   ============================================================ */
-const PASSWORD_HASH = "a4fc0c9d48f6380d65f290d49330314ed71cb3bcc6d7ec2bc201ebc642ccccbf";
-
-const DEFAULT_DATA = {
-  title: "우리 학교 생태지도",
-  subtitle: "지도 위의 이모티콘을 눌러 학교에서 만난 생물을 살펴보세요.",
-  accent: "#3f7d4e",
-  bg: "images/school-bg.jpg",
-  mapImg: "images/school-map.png",
-  species: [
-    { emoji: "🌲", name: "소나무", sci: "Pinus densiflora", x: 22, y: 30, photo: "images/pine.jpg",
-      traits: ["사계절 잎이 푸른 늘푸른바늘잎나무예요.", "바늘 모양 잎이 2개씩 모여 나요.", "봄에 꽃가루가 날리고, 솔방울에 씨앗이 들어 있어요."],
-      where: "발견한 곳: 운동장 옆 화단" },
-    { emoji: "🌿", name: "쑥", sci: "Artemisia princeps", x: 58, y: 62, photo: "images/mugwort.jpg",
-      traits: ["잎 뒷면에 흰 솜털이 있어서 은빛으로 보여요.", "특유의 향이 나고, 쑥떡이나 쑥국으로 먹어요.", "길가나 빈터에서 흔히 자라는 여러해살이풀이에요."],
-      where: "발견한 곳: 후문 근처 풀밭" },
-    { emoji: "🌸", name: "벚나무", sci: "Prunus serrulata", x: 76, y: 28, photo: "images/cherry.jpg",
-      traits: ["봄에 잎보다 먼저 꽃이 피어요.", "꽃잎은 5장이고 연분홍색이에요.", "여름에는 버찌라는 열매가 열려요."],
-      where: "발견한 곳: 정문에서 본관 가는 길" }
-  ]
-};
-/* ============================================================ */
-
-const STORE = "ecomap-data";
-const UNLOCK = "ecomap-unlocked";
-const $ = (id) => document.getElementById(id);
-const map = $("map"), legend = $("legend"), baseImg = $("baseImg"), fallback = $("fallback");
-const viewOverlay = $("viewOverlay"), editOverlay = $("editOverlay"), editBody = $("editBody");
-
-let data = null;
-let editMode = false;
-let lastFocus = null;
-
-/* ---------- 데이터 ---------- */
-async function loadData() {
-  try { const s = localStorage.getItem(STORE); if (s) return JSON.parse(s); } catch (e) {}
-  try { const r = await fetch("data.json", { cache: "no-cache" }); if (r.ok) return await r.json(); } catch (e) {}
-  return JSON.parse(JSON.stringify(DEFAULT_DATA));
-}
-function saveLocal() { try { localStorage.setItem(STORE, JSON.stringify(data)); } catch (e) {} }
-function cleanPath(p) { return String(p || "").replace(/["'()\\]/g, "").trim(); }
-function clamp(n) { return Math.max(0, Math.min(100, n)); }
-
-async function sha256(text) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-/* ---------- 그리기 ---------- */
-baseImg.addEventListener("error", () => { baseImg.style.display = "none"; fallback.style.display = "flex"; });
-baseImg.addEventListener("load", () => { baseImg.style.display = ""; fallback.style.display = "none"; });
-
-function render() {
-  document.title = data.title;
-  $("title").textContent = data.title;
-  $("subtitle").textContent = data.subtitle || "";
-  document.documentElement.style.setProperty("--leaf", data.accent || "#3f7d4e");
-
-  const bg = cleanPath(data.bg);
-  document.body.style.backgroundImage = bg
-    ? 'linear-gradient(rgba(233,239,230,.78), rgba(233,239,230,.78)), url("' + bg + '")'
-    : "none";
-
-  const mi = cleanPath(data.mapImg);
-  if (mi && baseImg.getAttribute("src") !== mi) baseImg.src = mi;
-
-  map.querySelectorAll(".marker").forEach((m) => m.remove());
-  legend.innerHTML = "";
-  data.species.forEach((s) => {
-    const m = document.createElement("button");
-    m.className = "marker"; m.type = "button";
-    m.style.left = s.x + "%"; m.style.top = s.y + "%";
-    m.textContent = s.emoji;
-    m.setAttribute("aria-label", s.name + (editMode ? " 편집" : " 자세히 보기"));
-    m.addEventListener("click", (e) => { e.stopPropagation(); if (!editMode) openView(s); });
-    m.addEventListener("pointerdown", (e) => startDrag(e, m, s));
-    map.appendChild(m);
-
-    const b = document.createElement("button");
-    b.type = "button"; b.textContent = s.emoji + " " + s.name;
-    b.addEventListener("click", () => (editMode ? openEditor(s, false) : openView(s)));
-    legend.appendChild(b);
-  });
-}
-
-/* ---------- 보기 팝업 ---------- */
-function openView(s) {
-  lastFocus = document.activeElement;
-  const photo = $("popPhoto");
-  photo.onerror = function () { this.removeAttribute("src"); };
-  photo.src = s.photo || "";
-  photo.alt = s.name + " 사진";
-  $("popTitle").textContent = s.emoji + " " + s.name;
-  $("popSci").textContent = s.sci || "";
-  const ul = $("popTraits"); ul.innerHTML = "";
-  (s.traits || []).forEach((t) => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); });
-  $("popWhere").textContent = s.where || "";
-  viewOverlay.classList.add("open");
-  $("popClose").focus();
-}
-function closeAll() {
-  viewOverlay.classList.remove("open");
-  editOverlay.classList.remove("open");
-  if (lastFocus && lastFocus.focus) lastFocus.focus();
-}
-$("popClose").addEventListener("click", closeAll);
-viewOverlay.addEventListener("click", (e) => { if (e.target === viewOverlay) closeAll(); });
-editOverlay.addEventListener("click", (e) => { if (e.target === editOverlay) closeAll(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
-
-/* ---------- 드래그로 옮기기 (편집 모드) ---------- */
-function startDrag(e, m, s) {
-  if (!editMode) return;
-  e.preventDefault();
-  m.setPointerCapture(e.pointerId);
-  const sx = e.clientX, sy = e.clientY;
-  let moved = false;
-  const move = (ev) => {
-    if (Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 5) moved = true;
-    if (!moved) return;
-    const r = map.getBoundingClientRect();
-    s.x = Math.round(clamp((ev.clientX - r.left) / r.width * 100) * 10) / 10;
-    s.y = Math.round(clamp((ev.clientY - r.top) / r.height * 100) * 10) / 10;
-    m.style.left = s.x + "%"; m.style.top = s.y + "%";
-  };
-  const up = () => {
-    m.removeEventListener("pointermove", move);
-    m.removeEventListener("pointerup", up);
-    m.removeEventListener("pointercancel", up);
-    if (moved) saveLocal(); else openEditor(s, false);
-  };
-  m.addEventListener("pointermove", move);
-  m.addEventListener("pointerup", up);
-  m.addEventListener("pointercancel", up);
-}
-
-/* ---------- 폼 도우미 ---------- */
-function row(label, el, hint) {
-  const w = document.createElement("label"); w.className = "row";
-  const sp = document.createElement("span"); sp.textContent = label;
-  w.append(sp, el);
-  if (hint) { const h = document.createElement("small"); h.textContent = hint; w.append(h); }
-  return w;
-}
-function input(value, type) {
-  const i = document.createElement("input"); i.type = type || "text"; i.value = value == null ? "" : value; return i;
-}
-function btn(text, cls, onclick) {
-  const b = document.createElement("button");
-  b.type = "button"; b.className = "btn" + (cls ? " " + cls : ""); b.textContent = text;
-  b.addEventListener("click", onclick); return b;
-}
-function showEdit(nodes) {
-  lastFocus = document.activeElement;
-  editBody.innerHTML = "";
-  nodes.forEach((n) => editBody.appendChild(n));
-  editOverlay.classList.add("open");
-  const first = editBody.querySelector("input, textarea"); if (first) first.focus();
-}
-function heading(text) { const h = document.createElement("h2"); h.textContent = text; return h; }
-function actions() { const d = document.createElement("div"); d.className = "actions"; return d; }
-
-/* ---------- 비밀번호 ---------- */
-function openLogin() {
-  const pw = input("", "password");
-  pw.autocomplete = "off";
-  const msg = document.createElement("p"); msg.className = "msg";
-  const go = async () => {
-    if (!window.crypto || !crypto.subtle) { msg.textContent = "이 주소(https)에서만 쓸 수 있어요."; return; }
-    if ((await sha256(pw.value)) === PASSWORD_HASH) {
-      try { sessionStorage.setItem(UNLOCK, "1"); } catch (e) {}
-      closeAll(); setEditMode(true);
-    } else { msg.textContent = "비밀번호가 맞지 않아요."; pw.select(); }
-  };
-  pw.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
-  const a = actions(); a.append(btn("확인", "", go), btn("취소", "alt", closeAll));
-  showEdit([heading("편집 비밀번호"), row("비밀번호를 입력하세요", pw), msg, a]);
-}
-$("lockBtn").addEventListener("click", openLogin);
-
-/* ---------- 편집 모드 켜기/끄기 ---------- */
-function setEditMode(on) {
-  editMode = on;
-  document.body.classList.toggle("editing", on);
-  $("hint").textContent = on
-    ? "편집 모드예요. 바뀐 내용은 이 브라우저에만 저장돼요. 모두에게 보이려면 [내보내기]로 받은 data.json 을 GitHub에 올리세요."
-    : "이모티콘이나 위 목록의 이름을 누르면 자세한 설명이 나와요.";
-  if (!on) { try { sessionStorage.removeItem(UNLOCK); } catch (e) {} }
-  render();
-}
-$("tbDone").addEventListener("click", () => setEditMode(false));
-
-/* ---------- 생물 편집 ---------- */
-function openEditor(s, isNew) {
-  const emoji = input(s.emoji), name = input(s.name), sci = input(s.sci);
-  const photo = input(s.photo), where = input(s.where);
-  const traits = document.createElement("textarea");
-  traits.rows = 5; traits.value = (s.traits || []).join("\n");
-  const x = input(s.x, "number"), y = input(s.y, "number");
-  [x, y].forEach((i) => { i.min = 0; i.max = 100; i.step = 0.1; });
-
-  const a = actions();
-  a.append(
-    btn("저장", "", () => {
-      s.emoji = emoji.value.trim() || "🌱";
-      s.name = name.value.trim() || "이름 없음";
-      s.sci = sci.value.trim();
-      s.photo = photo.value.trim();
-      s.where = where.value.trim();
-      s.traits = traits.value.split("\n").map((t) => t.trim()).filter(Boolean);
-      s.x = clamp(parseFloat(x.value) || 0); s.y = clamp(parseFloat(y.value) || 0);
-      if (isNew) data.species.push(s);
-      saveLocal(); render(); closeAll();
-    }),
-    btn("취소", "alt", closeAll)
-  );
-  if (!isNew) {
-    a.append(btn("삭제", "danger", () => {
-      if (!confirm(s.name + " 을(를) 지울까요?")) return;
-      data.species = data.species.filter((o) => o !== s);
-      saveLocal(); render(); closeAll();
-    }));
-  }
-  showEdit([
-    heading(isNew ? "생물 추가" : "생물 편집"),
-    row("이모티콘", emoji, "윈도우에서는 윈도우 키 + . 을 누르면 고를 수 있어요."),
-    row("이름", name), row("학명 (없으면 비워두세요)", sci),
-    row("사진 파일", photo, "images 폴더에 올린 파일 이름 (예: images/pine.jpg)"),
-    row("특징 (한 줄에 하나씩)", traits),
-    row("발견한 곳", where),
-    row("가로 위치 (0~100%)", x, "이모티콘을 끌어서 옮겨도 돼요."), row("세로 위치 (0~100%)", y),
-    a
-  ]);
-}
-$("tbAdd").addEventListener("click", () => {
-  openEditor({ emoji: "🌱", name: "", sci: "", x: 50, y: 50, photo: "images/", traits: [], where: "발견한 곳: " }, true);
-});
-
-/* ---------- 페이지 설정 ---------- */
-$("tbSettings").addEventListener("click", () => {
-  const t = input(data.title), st = input(data.subtitle);
-  const bg = input(data.bg), mi = input(data.mapImg), ac = input(data.accent || "#3f7d4e", "color");
-  const newPw = input(""); newPw.placeholder = "새 비밀번호 입력";
-  const out = document.createElement("div"); out.className = "out";
-  newPw.addEventListener("input", async () => {
-    out.textContent = newPw.value && crypto.subtle ? await sha256(newPw.value) : "";
-  });
-  const a = actions();
-  a.append(
-    btn("저장", "", () => {
-      data.title = t.value.trim() || "생태지도"; data.subtitle = st.value.trim();
-      data.bg = bg.value.trim(); data.mapImg = mi.value.trim(); data.accent = ac.value;
-      saveLocal(); render(); closeAll();
-    }),
-    btn("취소", "alt", closeAll)
-  );
-  showEdit([
-    heading("페이지 설정"),
-    row("제목", t), row("소개 문구", st),
-    row("배경 사진 파일", bg, "학교 사진을 images 폴더에 올리고 이름을 적어요. 비우면 배경 사진이 없어져요."),
-    row("지도 이미지 파일", mi),
-    row("강조 색", ac),
-    a,
-    row("비밀번호 바꾸기", newPw, "아래 긴 글자를 코드의 PASSWORD_HASH 따옴표 안에 붙여 넣고 GitHub에 올리면 바뀌어요."),
-    out
-  ]);
-});
-
-/* ---------- 내보내기 / 초기화 ---------- */
-$("tbExport").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob); link.download = "data.json";
-  document.body.appendChild(link); link.click(); link.remove();
-  URL.revokeObjectURL(link.href);
-});
-$("tbReset").addEventListener("click", async () => {
-  if (!confirm("이 브라우저에 저장된 변경을 모두 지울까요?")) return;
-  try { localStorage.removeItem(STORE); } catch (e) {}
-  data = await loadData(); render();
-});
-
-/* ---------- 시작 ---------- */
-(async function init() {
-  data = await loadData();
-  let unlocked = false;
-  try { unlocked = sessionStorage.getItem(UNLOCK) === "1"; } catch (e) {}
-  setEditMode(unlocked);
-})();
-</script>
+    function showPlant(name) {
+      const card = document.getElementById('infoCard');
+      const data = plantData[name];
+      if (data) {
+        document.getElementById('cardTitle').innerText = name;
+        document.getElementById('cardTag').innerText = data.tag;
+        document.getElementById('cardContent').innerHTML = `<p><strong>생태 및 특징:</strong> ${data.desc}</p>`;
+        card.classList.add('active');
+      }
+    }
+  </script>
 </body>
 </html>
